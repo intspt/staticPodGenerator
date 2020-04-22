@@ -1,4 +1,4 @@
-# StaticFrameworkPodGenerator
+# StaticPodGenerator
 
 生成指定pod对应的静态库的pod
 不过最终产物里podspec.json中的version以及source字段还需要进行编辑才可以
