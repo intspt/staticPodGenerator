@@ -1,0 +1,45 @@
+#repo_source#
+
+
+
+platform :ios, #platform_version#
+
+
+
+plugin 'cocoapods-rome2', {
+    dsym: false,
+    configuration: '#configuration#'
+}
+
+
+
+target 'Rikka' do
+    #pod_line#
+end
+
+
+
+post_install do |installer|
+    installer.send('root_specs').each { |spec|
+        File.open(File.join('tmp', spec.name + '.podspec.json'), 'w') {
+            |file|
+            file.puts spec.to_pretty_json 
+        }
+    }
+    installer.pods_project.build_configuration_list['Release'].build_settings['OTHER_CFLAGS'] = '-fembed-bitcode'
+    if ENV['LIBRARY'] != "1"
+        installer.pods_project.targets.each do |target|
+            if target.class.name != "Xcodeproj::Project::Object::PBXNativeTarget"
+                next
+            end
+            target.product_type = "com.apple.product-type.framework.static"
+            target.headers_build_phase.files.each do |file|
+                file.settings = { "ATTRIBUTES" => ["Public"] }
+            end
+            target.build_configurations.each do |config|
+                config.build_settings.delete('PUBLIC_HEADERS_FOLDER_PATH')
+                config.build_settings['MACH_O_TYPE'] = 'staticlib'
+            end
+        end
+    end
+end

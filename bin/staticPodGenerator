@@ -1,0 +1,61 @@
+#!/usr/bin/env ruby
+
+
+
+require 'optparse'
+require 'pathname'
+require 'staticPodGenerator'
+
+
+
+options = {}
+opts = OptionParser.new do |opts|
+    opts.banner = "Usage: staticPodGenerator [options]"
+
+    opts.on('-s', '--reposource REPOSOURCE', 'Repo Source, eg: https://github.com/CocoaPods/Specs.git') { |repo_source|
+        options[:repo_source] = repo_source
+    }
+    opts.on('-v', '--platformversion PLATFORMVERSION', 'Platform Version, Default is 8.0') { |platform_version|
+        options[:platform_version] = platform_version
+    }
+    opts.on('-l', '--library', 'generate static library instead of static framework') {
+        options[:library] = true
+    }
+    opts.on('-c', '--configuration CONFIGURATION', 'Configuration, Debug Or Release, Default is Release') { |configuration|
+        options[:configuration] = configuration
+    }
+    opts.on('-p', '--podline PODLINE', 'Pod Line in Podfile, eg: pod \'eLongFramework\', :path => \'/Users/spt/Developer/elongframework\'') { |pod_line|
+        options[:pod_line] = pod_line
+    }
+    opts.on('-o', '--output OUTPUT', 'Output path(absolute), default is $PWD/$(podname)Static') { |output|
+        options[:output] = output
+    }
+end
+opts.parse!
+
+if !options[:pod_line]
+    p 'need pod line!'
+    exit 1
+end
+
+if options[:output]
+    if !(Pathname.new(options[:output])).absolute?
+            p 'output must be absolute path!'
+        exit 1
+    end
+end
+
+if options[:library]
+    ENV['LIBRARY'] = "1"
+end
+
+
+
+StaticPodGenerator::run(
+    pod_line: options[:pod_line],
+    repo_source: options[:repo_source].nil? ? 'source \'http://git.17usoft.com/elongspecs/elongspecs.git\'' : options[:repo_source].nil?,
+    platform_version: options[:platform_version].nil? ? '9.0' : options[:platform_version],
+    is_library: options[:library].nil? ? false : options[:library],
+    configuration: options[:configuration].nil? ? 'Release' : options[:configuration],
+    output_path: options[:output]
+)
