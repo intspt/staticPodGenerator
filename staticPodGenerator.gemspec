@@ -5,6 +5,7 @@ Gem::Specification.new do |spec|
   spec.version       = StaticPodGenerator::VERSION
   spec.authors       = ["刘博"]
   spec.email         = ["bo.liu@ly.com"]
+  spec.licenses      = ['Nonstandard']
 
   spec.summary       = %q{生成指定pod对应的静态库pod}
   spec.homepage      = "http://git.17usoft.com/RubyGems/staticPodGenerator"
