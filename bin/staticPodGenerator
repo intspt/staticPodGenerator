@@ -53,7 +53,7 @@ end
 
 StaticPodGenerator::run(
     pod_line: options[:pod_line],
-    repo_source: options[:repo_source].nil? ? 'source \'http://git.17usoft.com/elongspecs/elongspecs.git\'' : options[:repo_source].nil?,
+    repo_source: options[:repo_source].nil? ? 'source \'http://git.17usoft.com/elongspecs/elongspecs.git\'' : options[:repo_source],
     platform_version: options[:platform_version].nil? ? '9.0' : options[:platform_version],
     is_library: options[:library].nil? ? false : options[:library],
     configuration: options[:configuration].nil? ? 'Release' : options[:configuration],
