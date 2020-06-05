@@ -26,6 +26,10 @@ module StaticPodGenerator
         FileUtils.rm_rf('Pods')
         FileUtils.mkdir_p('tmp')
 
+        if is_library
+            ENV['LIBRARY'] = '1'
+        end
+
         podfile_content = File.read(File.expand_path('../../../resources/PodfileTemplate', __FILE__))
         podfile_content = podfile_content.gsub('#repo_source#', repo_source)
         podfile_content = podfile_content.gsub('#platform_version#', platform_version)
