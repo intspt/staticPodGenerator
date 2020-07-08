@@ -188,6 +188,10 @@ module StaticPodGenerator
         end
         pod_group.recursive_children.each { |child|
             if child.kind_of?(Xcodeproj::Project::Object::PBXFileReference)
+                if child.parent.name.end_with?(".bundle")
+                    next
+                end
+
                 child_extension = child.display_name.split('.').last
                 if child_extension == 'h'
                     if is_library
