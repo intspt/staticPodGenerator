@@ -6,9 +6,7 @@
 ## Installation
 
 ```bash
-gem build staticPodGenerator.gemspec
-# 如果是Mac系统由于rootless的存在需要安装到/usr/local/bin下面
-sudo gem install *.gem -n /usr/local/bin
+./install.sh
 ```
 
 ## Usage

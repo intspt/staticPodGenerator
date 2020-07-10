@@ -3,6 +3,7 @@
 
 
 platform :ios, #platform_version#
+install! 'cocoapods', :deterministic_uuids => false
 
 
 
