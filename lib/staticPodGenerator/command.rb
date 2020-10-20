@@ -72,8 +72,8 @@ module StaticPodGenerator
             print %x[ #{cmd_str} ]
 
             cmd_str = "lipo -create #{device_framework_path}/#{pod_name} #{simulator_framework_path}/#{pod_name} -output #{device_framework_path}/#{pod_name}"
-            FileUtils.mv(device_framework_path, "#{ENV['PWD']}/build/#{pod_name}.framework")
             print %x[ #{cmd_str} ]
+            FileUtils.mv(device_framework_path, "#{ENV['PWD']}/build/#{pod_name}.framework")
         end
 
         # 生成静态库的spec
