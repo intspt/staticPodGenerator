@@ -46,18 +46,33 @@ module StaticPodGenerator
         pod_name = pod.name.split('/').first
         origin_spec = JSON.parse(File.read(File.join('tmp', pod_name + '.podspec.json')))
 
+        # 首先裁剪掉模拟器二进制文件里的i386跟arm64
+        # 把模拟器跟真机的二进制文件合并到真机的目录下
+        # 然后挪到build下面
         if is_library
-            # .a需要手动合并
-            cmd_str = 'lipo -create %s %s -output %s' % [File.join('build', 'Release-iphoneos', pod_name, 'lib' + pod_name + '.a'), File.join('build', 'Release-iphonesimulator', pod_name, 'lib' + pod_name + '.a'), File.join('build', 'lib' + pod_name + '.a')]
-            print %x[ #{cmd_str} ]
-        end
+            device_framework_path = "#{ENV['PWD']}/build/Release-iphoneos/#{pod_name}/#{pod_name}.framework"
+            simulator_framework_path = "#{ENV['PWD']}/build/Release-iphonesimulator/#{pod_name}/#{pod_name}.framework"
 
-        # 裁剪掉i386
-        if is_library
-            cmd_str = 'lipo -remove i386 %s -output %s' % [File.join('build', 'lib' + pod_name + '.a'), File.join('build', 'lib' + pod_name + '.a')]
+            cmd_str = "lipo -remove i386 #{simulator_framework_path}/#{pod_name} -output #{simulator_framework_path}/#{pod_name}"
+            print %x[ #{cmd_str} ]
+
+            cmd_str = "lipo -remove arm64 #{simulator_framework_path}/#{pod_name} -output #{simulator_framework_path}/#{pod_name}"
+            print %x[ #{cmd_str} ]
+
+            cmd_str = "lipo -create #{device_framework_path}/#{pod_name} #{simulator_framework_path}/#{pod_name} -output #{device_framework_path}/#{pod_name}"
+            FileUtils.mv(device_framework_path, "#{ENV['PWD']}/build/#{pod_name}.framework")
             print %x[ #{cmd_str} ]
         else
-            cmd_str = 'lipo -remove i386 %s -output %s' % [File.join('build', origin_spec['name'] + '.framework', origin_spec['name']), File.join('build', origin_spec['name'] + '.framework', origin_spec['name'])]
+            device_lib_path = "#{ENV['PWD']}/build/Release-iphoneos/#{pod_name}/lib#{pod_name}.a"
+            simulator_lib_path = "#{ENV['PWD']}/build/Release-iphonesimulator/#{pod_name}/lib#{pod_name}.a"
+
+            cmd_str = "lipo -remove i386 #{simulator_lib_path} -output #{simulator_lib_path}"
+            print %x[ #{cmd_str} ]
+
+            cmd_str = "lipo -remove arm64 #{simulator_lib_path} -output #{simulator_lib_path}"
+            print %x[ #{cmd_str} ]
+
+            cmd_str = "lipo -create #{device_lib_path} #{simulator_lib_path} -output #{ENV['PWD']}/build/lib#{pod_name}.a"
             print %x[ #{cmd_str} ]
         end
 
