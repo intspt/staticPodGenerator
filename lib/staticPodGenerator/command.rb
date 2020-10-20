@@ -50,6 +50,18 @@ module StaticPodGenerator
         # 把模拟器跟真机的二进制文件合并到真机的目录下
         # 然后挪到build下面
         if is_library
+            device_lib_path = "#{ENV['PWD']}/build/Release-iphoneos/#{pod_name}/lib#{pod_name}.a"
+            simulator_lib_path = "#{ENV['PWD']}/build/Release-iphonesimulator/#{pod_name}/lib#{pod_name}.a"
+
+            cmd_str = "lipo -remove i386 #{simulator_lib_path} -output #{simulator_lib_path}"
+            print %x[ #{cmd_str} ]
+
+            cmd_str = "lipo -remove arm64 #{simulator_lib_path} -output #{simulator_lib_path}"
+            print %x[ #{cmd_str} ]
+
+            cmd_str = "lipo -create #{device_lib_path} #{simulator_lib_path} -output #{ENV['PWD']}/build/lib#{pod_name}.a"
+            print %x[ #{cmd_str} ]
+        else
             device_framework_path = "#{ENV['PWD']}/build/Release-iphoneos/#{pod_name}/#{pod_name}.framework"
             simulator_framework_path = "#{ENV['PWD']}/build/Release-iphonesimulator/#{pod_name}/#{pod_name}.framework"
 
@@ -61,18 +73,6 @@ module StaticPodGenerator
 
             cmd_str = "lipo -create #{device_framework_path}/#{pod_name} #{simulator_framework_path}/#{pod_name} -output #{device_framework_path}/#{pod_name}"
             FileUtils.mv(device_framework_path, "#{ENV['PWD']}/build/#{pod_name}.framework")
-            print %x[ #{cmd_str} ]
-        else
-            device_lib_path = "#{ENV['PWD']}/build/Release-iphoneos/#{pod_name}/lib#{pod_name}.a"
-            simulator_lib_path = "#{ENV['PWD']}/build/Release-iphonesimulator/#{pod_name}/lib#{pod_name}.a"
-
-            cmd_str = "lipo -remove i386 #{simulator_lib_path} -output #{simulator_lib_path}"
-            print %x[ #{cmd_str} ]
-
-            cmd_str = "lipo -remove arm64 #{simulator_lib_path} -output #{simulator_lib_path}"
-            print %x[ #{cmd_str} ]
-
-            cmd_str = "lipo -create #{device_lib_path} #{simulator_lib_path} -output #{ENV['PWD']}/build/lib#{pod_name}.a"
             print %x[ #{cmd_str} ]
         end
 
