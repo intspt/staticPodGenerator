@@ -15,6 +15,6 @@ Gem::Specification.new do |spec|
   spec.executables   = ["staticPodGenerator"]
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "cocoapods-rome2", '~> 2.0.0'
-  spec.add_dependency "cocoapods", '~> 1.9.1'
+  spec.add_dependency "cocoapods-rome2", '>= 2.0.0'
+  spec.add_dependency "cocoapods", '>= 1.9.1'
 end
