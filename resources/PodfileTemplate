@@ -4,6 +4,9 @@
 
 platform :ios, #platform_version#
 install! 'cocoapods', :deterministic_uuids => false
+if ENV['LIBRARY'] != "1"
+    use_frameworks!(:linkage => :static)
+end
 
 
 
@@ -28,19 +31,4 @@ post_install do |installer|
         }
     }
     installer.pods_project.build_configuration_list['Release'].build_settings['OTHER_CFLAGS'] = '-fembed-bitcode'
-    if ENV['LIBRARY'] != "1"
-        installer.pods_project.targets.each do |target|
-            if target.class.name != "Xcodeproj::Project::Object::PBXNativeTarget"
-                next
-            end
-            target.product_type = "com.apple.product-type.framework.static"
-            target.headers_build_phase.files.each do |file|
-                file.settings = { "ATTRIBUTES" => ["Public"] }
-            end
-            target.build_configurations.each do |config|
-                config.build_settings.delete('PUBLIC_HEADERS_FOLDER_PATH')
-                config.build_settings['MACH_O_TYPE'] = 'staticlib'
-            end
-        end
-    end
 end
