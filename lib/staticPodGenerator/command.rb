@@ -172,6 +172,9 @@ module StaticPodGenerator
         new_spec['resources'].each { |resource|
             extension_list = resource.split('.').last.delete('{}').split(',')
             extension_list.each { |extension|
+                if extension == "xib"
+                    next
+                end
                 new_resource = File.join('resources', '*.' + extension)
                 if !new_resources.include?(new_resource)
                     new_resources.append(new_resource)
@@ -235,6 +238,10 @@ module StaticPodGenerator
         end
         need_copy_file_paths.each { |path|
             extension = path.split('.').last
+            if extension == "xib"
+                next
+            end
+            
             if extension == 'framework'
                 FileUtils.cp_r(path, File.join(dest_path, 'vendored_frameworks'))
             elsif extension == 'a'
