@@ -54,25 +54,25 @@ module StaticPodGenerator
             simulator_lib_path = "#{ENV['PWD']}/build/Release-iphonesimulator/#{pod_name}/lib#{pod_name}.a"
 
             cmd_str = "lipo -remove i386 #{simulator_lib_path} -output #{simulator_lib_path}"
-            print %x[ #{cmd_str} ]
+            %x[ #{cmd_str} ]
 
             cmd_str = "lipo -remove arm64 #{simulator_lib_path} -output #{simulator_lib_path}"
-            print %x[ #{cmd_str} ]
+            %x[ #{cmd_str} ]
 
             cmd_str = "lipo -create #{device_lib_path} #{simulator_lib_path} -output #{ENV['PWD']}/build/lib#{pod_name}.a"
-            print %x[ #{cmd_str} ]
+            %x[ #{cmd_str} ]
         else
             device_framework_path = "#{ENV['PWD']}/build/Release-iphoneos/#{pod_name}/#{pod_name}.framework"
             simulator_framework_path = "#{ENV['PWD']}/build/Release-iphonesimulator/#{pod_name}/#{pod_name}.framework"
 
             cmd_str = "lipo -remove i386 #{simulator_framework_path}/#{pod_name} -output #{simulator_framework_path}/#{pod_name}"
-            print %x[ #{cmd_str} ]
+            %x[ #{cmd_str} ]
 
             cmd_str = "lipo -remove arm64 #{simulator_framework_path}/#{pod_name} -output #{simulator_framework_path}/#{pod_name}"
-            print %x[ #{cmd_str} ]
+            %x[ #{cmd_str} ]
 
             cmd_str = "lipo -create #{device_framework_path}/#{pod_name} #{simulator_framework_path}/#{pod_name} -output #{device_framework_path}/#{pod_name}"
-            print %x[ #{cmd_str} ]
+            %x[ #{cmd_str} ]
             FileUtils.mv(device_framework_path, "#{ENV['PWD']}/build/#{pod_name}.framework")
         end
 
@@ -169,11 +169,14 @@ module StaticPodGenerator
 
         # 处理resources，去掉路径跟文件名只保留后缀
         new_resources = []
+        # 标记一下是否有xib文件，后面要处理
+        is_include_xib = false
         new_spec['resources'].each { |resource|
             extension_list = resource.split('.').last.delete('{}').split(',')
             extension_list.each { |extension|
                 if extension == "xib"
-                    next
+                    is_include_xib = true
+                    extension = "nib"
                 end
                 new_resource = File.join('resources', '*.' + extension)
                 if !new_resources.include?(new_resource)
@@ -215,6 +218,10 @@ module StaticPodGenerator
                     if is_library
                         need_copy_file_paths.append(child.real_path.to_s)
                     end
+                elsif child_extension == "xib"
+                    if new_spec['resources'].include?("resources/*.nib")
+                        need_copy_file_paths.append(child.real_path.to_s)
+                    end
                 elsif child_extension == 'a' || child_extension == 'framework' || new_spec['resources'].include?(File.join('resources', '*.' + child_extension))
                     need_copy_file_paths.append(child.real_path.to_s)
                 end
@@ -236,22 +243,39 @@ module StaticPodGenerator
         if is_library
             FileUtils.mkdir_p(File.join(dest_path, 'headers'))
         end
+        xib_file_paths = []
         need_copy_file_paths.each { |path|
             extension = path.split('.').last
-            if extension == "xib"
-                next
-            end
-            
             if extension == 'framework'
                 FileUtils.cp_r(path, File.join(dest_path, 'vendored_frameworks'))
             elsif extension == 'a'
                 FileUtils.cp_r(path, File.join(dest_path, 'vendored_libraries'))
             elsif extension == 'h'
                 FileUtils.cp_r(path, File.join(dest_path, 'headers'))
+            elsif extension == "xib"
+                xib_file_paths.append(path)
             else
                 FileUtils.cp_r(path, File.join(dest_path, 'resources'))
             end
         }
+        puts xib_file_paths
+        # 如果包含xib
+        if is_include_xib
+            if is_library
+                # 如果是打.a，需要手动编译出nib
+                xib_file_paths.each { |path|
+                    cmd_str = "ibtool --reference-external-strings-file --errors --warnings --notices --minimum-deployment-target 9.0 --output-format human-readable-text --compile #{File.join(dest_path, 'resources')}/`basename #{path} .xib`.nib #{path} --target-device ipad --target-device iphone"
+                    puts cmd_str
+                    %x[ #{cmd_str} ]
+                }
+            else
+                # 如果是打.framework，nib会包含在.framework里
+                # 这里把编译出来的nib复制到resources目录下
+                cmd_str = "mv #{File.join(dest_path, "vendored_frameworks/#{pod_name}.framework/*.nib")} #{File.join(dest_path, 'resources')}"
+                puts cmd_str
+                %x[ #{cmd_str} ]
+            end
+        end
         # 生成podspec
         File.open(File.join(dest_path, new_spec['name'] + '.podspec.json'), 'w') {
             |file|
