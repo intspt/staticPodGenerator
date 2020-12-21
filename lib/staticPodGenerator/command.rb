@@ -261,20 +261,12 @@ module StaticPodGenerator
         puts xib_file_paths
         # 如果包含xib
         if is_include_xib
-            if is_library
-                # 如果是打.a，需要手动编译出nib
-                xib_file_paths.each { |path|
-                    cmd_str = "ibtool --reference-external-strings-file --errors --warnings --notices --minimum-deployment-target 9.0 --output-format human-readable-text --compile #{File.join(dest_path, 'resources')}/`basename #{path} .xib`.nib #{path} --target-device ipad --target-device iphone"
-                    puts cmd_str
-                    %x[ #{cmd_str} ]
-                }
-            else
-                # 如果是打.framework，nib会包含在.framework里
-                # 这里把编译出来的nib复制到resources目录下
-                cmd_str = "mv #{File.join(dest_path, "vendored_frameworks/#{pod_name}.framework/*.nib")} #{File.join(dest_path, 'resources')}"
+            # 把xib编译成nib
+            xib_file_paths.each { |path|
+                cmd_str = "ibtool --reference-external-strings-file --errors --warnings --notices --minimum-deployment-target 9.0 --output-format human-readable-text --compile #{File.join(dest_path, 'resources')}/`basename #{path} .xib`.nib #{path} --target-device ipad --target-device iphone"
                 puts cmd_str
                 %x[ #{cmd_str} ]
-            end
+            }
         end
         # 生成podspec
         File.open(File.join(dest_path, new_spec['name'] + '.podspec.json'), 'w') {

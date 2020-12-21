@@ -4,9 +4,10 @@
 
 platform :ios, #platform_version#
 install! 'cocoapods', :deterministic_uuids => false
-if ENV['LIBRARY'] != "1"
-    use_frameworks!(:linkage => :static)
-end
+# 有bug，等cocoapods修复，暂时在post_install里手动修改工程配置
+# if ENV['LIBRARY'] != "1"
+#     use_frameworks!(:linkage => :static)
+# end
 
 
 
@@ -32,11 +33,23 @@ post_install do |installer|
     }
     installer.pods_project.build_configuration_list['Release'].build_settings['OTHER_CFLAGS'] = '-fembed-bitcode'
     installer.pods_project.targets.each do |target|
+        # 据我观察
+        # Xcodeproj::Project::Object::PBXNativeTarget是有源码的那种
+        # Xcodeproj::Project::Object::PBXAggregateTarget是没源码的
         if target.class.name != "Xcodeproj::Project::Object::PBXNativeTarget"
             next
         end
+
+        # 因为cocoapdos提供的use_frameworks!方法有bug
+        # header search path不全
+        # 所以这里手动修改工程
+        target.product_type = "com.apple.product-type.framework.static"
+        target.headers_build_phase.files.each do |file|
+            file.settings = { "ATTRIBUTES" => ["Public"] }
+        end
         target.build_configurations.each do |config|
-            config.build_settings['DEFINES_MODULE'] = false
+            config.build_settings.delete('PUBLIC_HEADERS_FOLDER_PATH')
+            config.build_settings['MACH_O_TYPE'] = 'staticlib'
         end
     end
 end
