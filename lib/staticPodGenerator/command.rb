@@ -258,7 +258,6 @@ module StaticPodGenerator
                 FileUtils.cp_r(path, File.join(dest_path, 'resources'))
             end
         }
-        puts xib_file_paths
         # 如果包含xib
         if is_include_xib
             # 把xib编译成nib
