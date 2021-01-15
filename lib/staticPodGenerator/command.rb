@@ -90,7 +90,16 @@ module StaticPodGenerator
         new_spec['vendored_frameworks'] = 'vendored_frameworks/*.framework'
         new_spec['vendored_libraries'] = 'vendored_libraries/*.a'
         if is_library
+            new_spec['header_dir'] = origin_spec['name']
             new_spec['source_files'] = 'headers/*.h'
+            if origin_spec['xcconfig']
+                new_spec['xcconfig'] = origin_spec['xcconfig']
+                new_spec['xcconfig']['HEADER_SEARCH_PATHS'] = "\"${PODS_ROOT}/Headers/Public/#{origin_spec['name']}Static/#{origin_spec['name']}\""
+            else
+                new_spec['xcconfig'] = {
+                    'HEADER_SEARCH_PATHS': "\"${PODS_ROOT}/Headers/Public/#{origin_spec['name']}Static/#{origin_spec['name']}\""
+                }
+            end
         end
         # spec跟subspec共有的属性
         pa_list = ['dependencies', 'frameworks', 'weak_frameworks', 'libraries', 'resources']
