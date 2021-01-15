@@ -82,7 +82,7 @@ module StaticPodGenerator
         new_spec['name'] = origin_spec['name'] + 'Static'
         new_spec['version'] = '1.0.0'
         new_spec['authors'] = origin_spec['authors']
-        new_spec['license'] = origin_spec['license']
+        new_spec['license'] = "Commercial"
         new_spec['homepage'] = ""
         new_spec['source'] = {}
         new_spec['summary'] = 'StaticFramework of ' + origin_spec['name']
