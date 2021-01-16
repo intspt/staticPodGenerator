@@ -1,9 +1,9 @@
 # StaticPodGenerator
 
-生成指定pod对应的静态库的pod
-源码打包成.a或者.framework【根据参数决定
-xib会编译成nib
-其他资源不处理直接保留
+生成指定pod对应的静态库的pod 
+源码打包成.a或者.framework【根据参数决定 
+xib会编译成nib 
+其他资源不处理直接保留 
 不过最终产物里podspec.json中的version以及source字段还需要进行编辑才可以
 
 ## Installation
