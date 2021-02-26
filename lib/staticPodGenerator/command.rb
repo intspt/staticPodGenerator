@@ -53,23 +53,11 @@ module StaticPodGenerator
             device_lib_path = "#{ENV['PWD']}/build/#{configuration}-iphoneos/#{pod_name}/lib#{pod_name}.a"
             simulator_lib_path = "#{ENV['PWD']}/build/#{configuration}-iphonesimulator/#{pod_name}/lib#{pod_name}.a"
 
-            cmd_str = "lipo -remove i386 #{simulator_lib_path} -output #{simulator_lib_path}"
-            %x[ #{cmd_str} ]
-
-            cmd_str = "lipo -remove arm64 #{simulator_lib_path} -output #{simulator_lib_path}"
-            %x[ #{cmd_str} ]
-
             cmd_str = "lipo -create #{device_lib_path} #{simulator_lib_path} -output #{ENV['PWD']}/build/lib#{pod_name}.a"
             %x[ #{cmd_str} ]
         else
             device_framework_path = "#{ENV['PWD']}/build/#{configuration}-iphoneos/#{pod_name}/#{pod_name}.framework"
             simulator_framework_path = "#{ENV['PWD']}/build/#{configuration}-iphonesimulator/#{pod_name}/#{pod_name}.framework"
-
-            cmd_str = "lipo -remove i386 #{simulator_framework_path}/#{pod_name} -output #{simulator_framework_path}/#{pod_name}"
-            %x[ #{cmd_str} ]
-
-            cmd_str = "lipo -remove arm64 #{simulator_framework_path}/#{pod_name} -output #{simulator_framework_path}/#{pod_name}"
-            %x[ #{cmd_str} ]
 
             cmd_str = "lipo -create #{device_framework_path}/#{pod_name} #{simulator_framework_path}/#{pod_name} -output #{device_framework_path}/#{pod_name}"
             %x[ #{cmd_str} ]
